@@ -2,6 +2,7 @@ package cs544.team7.project.model;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -31,7 +32,7 @@ public class Session {
 	@JoinColumn(name = "person_id")
 	private Person provider;
 	@OneToMany(mappedBy = "session", orphanRemoval = true)
-	private Collection<Appointment> appointments;
+	private Collection<Appointment> appointments = new ArrayList<>();
 	
 	public Session(LocalDate date, LocalTime startTime, int duration, String location, Person provider) {
 		this.date = date;

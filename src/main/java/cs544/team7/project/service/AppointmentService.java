@@ -23,8 +23,10 @@ public class AppointmentService implements IAppointmentService {
     private IEmailService emailService;
 
     @Autowired
-    public AppointmentService(AppointmentRepository appointmentRepository) {
+    public AppointmentService(AppointmentRepository appointmentRepository,
+                              IEmailService emailService) {
         this.appointmentRepository = appointmentRepository;
+        this.emailService = emailService;
     }
 
     @Override
@@ -43,7 +45,9 @@ public class AppointmentService implements IAppointmentService {
             throw new IllegalStateException("Session has been finished!");
         if(!isClient) throw new IllegalAccessException("Person is not client");
         emailService.sendMessage(p, "You have successfully created Appointment!");
-        return new Appointment(p, s);
+        Appointment appointment = new Appointment(p, s);
+        appointmentRepository.save(appointment);
+        return appointment;
     }
 
     @Override
