@@ -3,6 +3,7 @@ package cs544.team7.project.model;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -32,7 +33,7 @@ public class Person {
 	@JoinTable(name = "Person_Role", 
 			   joinColumns = @JoinColumn(name = "person_id"), 
 			   inverseJoinColumns = @JoinColumn(name = "role_id"))
-	private Collection<Role> roles = new ArrayList<>();
+	private Collection<Role> roles = new LinkedList<>();
 	@OneToMany(mappedBy = "client", orphanRemoval = true)
 	private Collection<Appointment> appointments = new ArrayList<>();
 	@OneToMany(mappedBy = "provider", orphanRemoval = true)

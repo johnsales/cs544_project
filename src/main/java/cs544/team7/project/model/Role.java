@@ -2,6 +2,7 @@ package cs544.team7.project.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -26,4 +27,17 @@ public class Role {
     public Role(RoleType type) {
     	this.type = type;
     }
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		Role role = (Role) o;
+		return type == role.type;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(type);
+	}
 }
