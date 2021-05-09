@@ -7,7 +7,7 @@ import cs544.team7.project.model.Person;
 import cs544.team7.project.model.Session;
 
 public interface IAppointmentService {
-	public Appointment makeReservation(Person p, Session s);
+	public Appointment makeReservation(Person p, Session s) throws IllegalAccessException;
 	public boolean cancelAppointment(Appointment a);
 	public List<Appointment> getAllPendingAppointmentsForSession(Session s);
 	public boolean approveAppointment(Appointment a);
