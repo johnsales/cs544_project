@@ -3,12 +3,7 @@ package cs544.team7.project.model;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,15 +18,17 @@ public class Appointment {
 	private int id;
 	private LocalDateTime requestTime = LocalDateTime.now();
 	private AppointmentStatus status = AppointmentStatus.PENDING;
-	@ManyToOne
+	@ManyToOne(cascade = CascadeType.PERSIST)
 	@JoinColumn(name = "person_id")
 	private Person client;
-	@ManyToOne
+	@ManyToOne(cascade = CascadeType.PERSIST)
 	@JoinColumn(name = "session_id")
 	private Session session;
 	
 	public Appointment(Person client, Session session) {
 		this.client = client;
 		this.session = session;
+		client.addAppointment(this);
+		session.addAppointment(this);
 	}
 }

@@ -2,6 +2,7 @@ package cs544.team7.project.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -32,9 +33,9 @@ public class Person {
 			   joinColumns = @JoinColumn(name = "person_id"), 
 			   inverseJoinColumns = @JoinColumn(name = "role_id"))
 	private Collection<Role> roles = new ArrayList<>();
-	@OneToMany(mappedBy = "client")
+	@OneToMany(mappedBy = "client", orphanRemoval = true)
 	private Collection<Appointment> appointments = new ArrayList<>();
-	@OneToMany(mappedBy = "provider")
+	@OneToMany(mappedBy = "provider", orphanRemoval = true)
 	private Collection<Session> sessions = new ArrayList<>();
 	
 	@Override
@@ -53,6 +54,47 @@ public class Person {
 		this.roles = roles;
 	}
 
-	
-	
+	// Convenience methods
+
+	public void addAppointment(Appointment appointment) {
+		appointments.add(appointment);
+	}
+	public void removeAppointment(Appointment appointment) {
+		if(appointment.getClient() == this)
+			appointments.remove(appointment);
+		else
+			throw new IllegalArgumentException("This appointment belongs to other user");
+	}
+	private void setAppointments(Collection<Appointment> a) {
+		appointments = a;
+	}
+	public Collection<Appointment> getAppointments() {
+		return Collections.unmodifiableCollection(appointments);
+	}
+
+	public void addSession(Session session) {
+		sessions.add(session);
+	}
+	public void removeSession(Session session) {
+		if(session.getProvider() == this)
+			sessions.remove(session);
+		else
+			throw new IllegalArgumentException("This appointment belongs to other user");
+	}
+	private void setSessions(Collection<Session> s) {
+		sessions = s;
+	}
+	public Collection<Session> getSessions() {
+		return Collections.unmodifiableCollection(sessions);
+	}
+
+	public void addRole(Role role) {
+		if(!roles.contains(role)) roles.add(role);
+	}
+	public void removeRole(Role role) {
+		if(roles.contains(role)) roles.remove(role);
+	}
+	public Collection<Role> getRoles() {
+		return Collections.unmodifiableCollection(roles);
+	}
 }

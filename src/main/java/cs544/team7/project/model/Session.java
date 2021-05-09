@@ -3,6 +3,7 @@ package cs544.team7.project.model;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Collection;
+import java.util.Collections;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -29,7 +30,7 @@ public class Session {
 	@ManyToOne
 	@JoinColumn(name = "person_id")
 	private Person provider;
-	@OneToMany(mappedBy = "session")
+	@OneToMany(mappedBy = "session", orphanRemoval = true)
 	private Collection<Appointment> appointments;
 	
 	public Session(LocalDate date, LocalTime startTime, int duration, String location, Person provider) {
@@ -44,6 +45,22 @@ public class Session {
 	public String toString() {
 		return "Session [id=" + id + ", date=" + date + ", startTime=" + startTime + ", duration=" + duration
 				+ ", location=" + location + ", provider=" + provider + ", appointments=" + appointments + "]";
+	}
+
+
+	// Convenience methods
+
+	public void addAppointment(Appointment appointment) {
+		appointments.add(appointment);
+	}
+	public void removeAppointment(Appointment appointment) {
+		appointments.remove(appointment);
+	}
+	private void setAppointments(Collection<Appointment> a) {
+		appointments = a;
+	}
+	public Collection<Appointment> getAppointments() {
+		return Collections.unmodifiableCollection(appointments);
 	}
 	
 }
