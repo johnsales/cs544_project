@@ -1,7 +1,6 @@
 package cs544.team7.project.model;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @Getter @ToString
