@@ -58,16 +58,19 @@ public class AppointmentService implements IAppointmentService {
         if(LocalDate.now().isAfter(s.getDate()) ||
                 (LocalDate.now().isEqual(s.getDate()) && LocalTime.now().isAfter(s.getStartTime())))
             throw new IllegalStateException("Session has been finished!");
+
+        s.removeAppointment(a);
+
         switch (a.getStatus()) {
             case PENDING:   a.setStatus(CANCELED);
-                            appointmentRepository.save(a);
+                            updateAppointment(a);
                             break;
-            case CANCELED: return true;
-            default:  a.setStatus(CANCELED);
+            case APPROVED:  a.setStatus(CANCELED);
                       updateAppointment(a);
                       getAllPendingAppointmentsForSession(s).stream()
                               .findFirst().ifPresent(a2 -> approveAppointment(a2));
                 break;
+            default:  return true;
         }
         emailService.sendMessage(p, "Your Appointment has been canceled!");
         return true;
@@ -75,6 +78,7 @@ public class AppointmentService implements IAppointmentService {
 
     @Override
     public List<Appointment> getAllPendingAppointmentsForSession(Session s) {
+        if(s == null) throw new IllegalArgumentException("Argument is null");
         return s.getAppointments().stream().filter(
                 appointment -> appointment.getStatus() == PENDING
         ).sorted(
@@ -88,12 +92,14 @@ public class AppointmentService implements IAppointmentService {
         a.setStatus(APPROVED);
         updateAppointment(a);
         emailService.sendMessage(a.getClient(),
-                "Your appointment has been approved! Session details: " + a.getSession().toString());
+                "Your appointment has been approved!");
         return true;
     }
 
     @Override
     public void deleteAppointment(Appointment a) {
+        a.getClient().removeAppointment(a);
+        a.getSession().removeAppointment(a);
         appointmentRepository.delete(a);
         log.info("An appointment has been deleted!");
     }

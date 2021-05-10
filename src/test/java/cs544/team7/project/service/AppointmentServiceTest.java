@@ -7,25 +7,19 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 
-import java.security.Provider;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.Month;
 import java.util.*;
 
-import static cs544.team7.project.model.AppointmentStatus.APPROVED;
+import static cs544.team7.project.model.AppointmentStatus.*;
 import static cs544.team7.project.model.RoleType.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AppointmentServiceTest {
@@ -37,6 +31,7 @@ class AppointmentServiceTest {
     private AppointmentService underTest = null;
     private Person person = null;
     private Session session = null;
+    private Appointment appointment = null;
     private Role clientRole = new Role(CLIENT);
     private Role providerRole = new Role(PROVIDER);
 
@@ -46,18 +41,19 @@ class AppointmentServiceTest {
         underTest = new AppointmentService(repo, emailService);
         person = new Person("John", "Smith", "jsmith@gmail.com", "jsmith", "1234", new LinkedList<>(Arrays.asList(clientRole, providerRole)));
         session = new Session(LocalDate.now().plusDays(4), LocalTime.now(), 120, "Darby Hall", person);
+        appointment = new Appointment(person, session);
     }
 
     @Test
     void canMakeReservationTest() throws IllegalAccessException {
         // when
-        Appointment appointment = underTest.makeReservation(person, session);
+        Appointment a = underTest.makeReservation(person, session);
 
         // then
-        verify(repo).save(appointment);
+        verify(repo).save(a);
         verify(emailService).sendMessage(any(Person.class), anyString());
-        assertThat(appointment.getClient()).isEqualTo(person);
-        assertThat(appointment.getSession()).isEqualTo(session);
+        assertThat(a.getClient()).isEqualTo(person);
+        assertThat(a.getSession()).isEqualTo(session);
     }
 
     @Test
@@ -76,7 +72,7 @@ class AppointmentServiceTest {
 
     @Test
     void SessionAlreadyAssignedMakeReservationTest() {
-        new Appointment(new Person(), session).setStatus(APPROVED);
+        appointment.setStatus(APPROVED);
         // then
         assertThatThrownBy(() ->underTest.makeReservation(person, session));
     }
@@ -89,27 +85,94 @@ class AppointmentServiceTest {
     }
 
     @Test
-    @Disabled
-    void cancelAppointment() {
+    void canCancelAppointmentTest() {
+        // when
+        underTest.cancelAppointment(appointment);
+
+        // then
+        assertThat(appointment.getStatus()).isEqualTo(CANCELED);
+        assertFalse(session.getAppointments().contains(appointment));
     }
 
     @Test
-    @Disabled
-    void getAllPendingAppointmentsForSession() {
+    void canCancelAppointmentThatWasApprovedTest() {
+        // given
+        appointment.setStatus(APPROVED);
+
+        // when
+        underTest.cancelAppointment(appointment);
+
+        // then
+        assertThat(appointment.getStatus()).isEqualTo(CANCELED);
+        assertFalse(session.getAppointments().contains(appointment));
+        assertTrue(session.getAppointments().isEmpty() ||
+                session.getAppointments().stream()
+                       .filter(a -> a.getStatus() == APPROVED)
+                       .count() == 1L
+                );
     }
 
     @Test
-    @Disabled
-    void approveAppointment() {
+    void tryCancelAppointmentWhenItAlreadyCanceledTest() {
+        // given
+        appointment.setStatus(CANCELED);
+
+        // when
+        underTest.cancelAppointment(appointment);
+
+        // then
+        verify(repo, never()).save(appointment);
+        verify(repo, never()).saveAndFlush(appointment);
+        assertFalse(session.getAppointments().contains(appointment));
     }
 
     @Test
-    @Disabled
+    void SessionExpiredCancelAppointmentTest() {
+        session.setDate(LocalDate.now().minusDays(1));
+        // then
+        assertThatThrownBy(() ->underTest.cancelAppointment(new Appointment(person, session)));
+    }
+
+    @Test
+    void getAllPendingAppointmentsForSessionTest() {
+        // when
+        List<Appointment> appointments = underTest.getAllPendingAppointmentsForSession(session);
+
+        // then
+        appointments.forEach(a -> {
+            assertTrue(a.getStatus() == PENDING);
+            assertTrue(a.getSession().equals(session));
+        });
+    }
+
+    @Test
+    void approveAppointmentTest() {
+        // when
+        underTest.approveAppointment(appointment);
+
+        // then
+        assertTrue(appointment.getStatus() == APPROVED);
+        verify(repo).save(appointment);
+        verify(emailService).sendMessage(any(), anyString());
+    }
+
+    @Test
     void deleteAppointment() {
+        Appointment app = new Appointment(person, session);
+        // when
+        underTest.deleteAppointment(app);
+        // then
+        verify(repo).delete(app);
+        assertFalse(session.getAppointments().contains(app));
+        assertFalse(person.getAppointments().contains(app));
     }
 
     @Test
-    @Disabled
     void updateAppointment() {
+        Appointment app = new Appointment(person, session);
+        // when
+        underTest.updateAppointment(app);
+        // then
+        verify(repo).save(app);
     }
 }
