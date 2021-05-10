@@ -37,12 +37,7 @@ public class Person {
 	@OneToMany(mappedBy = "provider")
 	private Collection<Session> sessions = new ArrayList<>();
 	
-	@Override
-	public String toString() {
-		return "Person [id=" + id + ", fname=" + fname + ", lname=" + lname + ", email=" + email + ", username="
-				+ username + ", password=" + password + ", roles=" + roles + ", appointments=" + appointments
-				+ ", sessions=" + sessions + "]";
-	}
+
 
 	public Person(String fname, String lname, String email, String username, String password, Collection<Role> roles) {
 		this.fname = fname;
@@ -53,6 +48,11 @@ public class Person {
 		this.roles = roles;
 	}
 
-	
+	@Override
+	public String toString() {
+		return "Person [id=" + id + ", fname=" + fname + ", lname=" + lname + ", email=" + email + ", username="
+				+ username + ", password=" + password + ", roles=" + roles + ", appointments=" + appointments
+				+ ", sessions=" + sessions + "]";
+	}
 	
 }

@@ -1,6 +1,5 @@
 package cs544.team7.project.service;
 
-import java.time.LocalDate;
 import java.util.List;
 
 import cs544.team7.project.model.Session;

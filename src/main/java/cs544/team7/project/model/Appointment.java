@@ -1,6 +1,5 @@
 package cs544.team7.project.model;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import javax.persistence.Entity;
