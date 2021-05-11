@@ -8,12 +8,13 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static cs544.team7.project.model.AppointmentStatus.*;
-import static cs544.team7.project.model.RoleType.CLIENT;
+import static cs544.team7.project.model.RoleType.*;
 
 @Service
 @Log4j2
@@ -51,6 +52,44 @@ public class AppointmentService implements IAppointmentService {
     }
 
     @Override
+    public boolean cancelAppointment(Person p, Appointment a) {
+        if(a == null || a.getClient() == null || a.getSession()==null)
+            return false;
+
+        // Checking if session start time is not in the past
+        if(LocalDate.now().isAfter(a.getSession().getDate()) ||
+                (LocalDate.now().isEqual(a.getSession().getDate()) &&
+                        LocalTime.now().isAfter(a.getSession().getStartTime()))) {
+            return false;
+        }
+
+        Collection<Role> roles = p.getRoles();
+
+        if(roles.contains(new Role(RoleType.ADMIN))) {
+            //RoleType is ADMIN & session start time is not past
+            a.setStatus(AppointmentStatus.CANCELED);
+            a.getSession().removeAppointment(a);
+            updateAppointment(p, a);
+        }
+        else if(roles.contains(new Role(RoleType.CLIENT)) || roles.contains(new Role(PROVIDER))) {
+            // RoleType is not ADMIN --> Checking if session start time is after more than 48 hrs
+            if(LocalTime.now().plusHours(48).isBefore(a.getSession().getStartTime())){
+                return false;
+            }
+            a.getSession().removeAppointment(a);
+            if(a.getStatus() != CANCELED) {
+                a.setStatus(AppointmentStatus.CANCELED);
+                updateAppointment(p, a);
+            }
+        }
+        else {
+            return false;
+        }
+
+        return true;
+    }
+
+/*    @Override
     public boolean cancelAppointment(Appointment a) {
         if(a == null) throw new IllegalArgumentException("Argument is null");
         Person p = a.getClient();
@@ -75,9 +114,9 @@ public class AppointmentService implements IAppointmentService {
         emailService.sendMessage(p, "Your Appointment has been canceled!");
         return true;
     }
-
+*/
     @Override
-    public List<Appointment> getAllPendingAppointmentsForSession(Session s) {
+    public List<Appointment> getAllPendingAppointmentsForSession(Person p, Session s) {
         if(s == null) throw new IllegalArgumentException("Argument is null");
         return s.getAppointments().stream().filter(
                 appointment -> appointment.getStatus() == PENDING
@@ -87,6 +126,32 @@ public class AppointmentService implements IAppointmentService {
     }
 
     @Override
+    public boolean approveAppointment(Person p, Appointment a) {
+        if(a == null || a.getClient() == null || a.getSession()==null)
+            return false;
+
+        Session s = a.getSession();
+        Collection<Appointment> appointments = s.getAppointments();
+
+        // Check session if it already has an APPROVED appointment
+        for(Appointment apt : appointments) {
+            if(apt.getStatus().equals(AppointmentStatus.APPROVED))
+                return false;
+        }
+
+        Collection<Role> roles = p.getRoles();
+        // Only PROVIDER can approve an appointment
+        if(roles.contains(new Role(PROVIDER)) || roles.contains(new Role(ADMIN))) {
+            a.setStatus(AppointmentStatus.APPROVED);
+            updateAppointment(p, a);
+            emailService.sendMessage(a.getClient(), "Your appointment approved!");
+            return true;
+        }
+
+        return false;
+    }
+/*
+    @Override
     public boolean approveAppointment(Appointment a) {
         if(a == null) throw new IllegalArgumentException("Argument is null");
         a.setStatus(APPROVED);
@@ -95,9 +160,9 @@ public class AppointmentService implements IAppointmentService {
                 "Your appointment has been approved!");
         return true;
     }
-
+*/
     @Override
-    public void deleteAppointment(Appointment a) {
+    public void deleteAppointment(Person p, Appointment a) {
         a.getClient().removeAppointment(a);
         a.getSession().removeAppointment(a);
         appointmentRepository.delete(a);
@@ -105,7 +170,7 @@ public class AppointmentService implements IAppointmentService {
     }
 
     @Override
-    public void updateAppointment(Appointment a) {
+    public void updateAppointment(Person p,Appointment a) {
         appointmentRepository.save(a);
         log.info("An appointment has been updated!");
     }

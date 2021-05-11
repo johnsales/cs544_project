@@ -44,10 +44,15 @@ public class Session {
 
 	@Override
 	public String toString() {
-		return "Session [id=" + id + ", date=" + date + ", startTime=" + startTime + ", duration=" + duration
-				+ ", location=" + location + ", provider=" + provider + ", appointments=" + appointments + "]";
+		return "Session{" +
+				"id=" + id +
+				", date=" + date +
+				", startTime=" + startTime +
+				", duration=" + duration +
+				", location='" + location + '\'' +
+				", provider=" + provider +
+				'}';
 	}
-
 
 	// Convenience methods
 

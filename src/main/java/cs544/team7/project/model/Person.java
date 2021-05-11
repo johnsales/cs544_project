@@ -38,12 +38,18 @@ public class Person {
 	private Collection<Appointment> appointments = new ArrayList<>();
 	@OneToMany(mappedBy = "provider", orphanRemoval = true)
 	private Collection<Session> sessions = new ArrayList<>();
-	
+
 	@Override
 	public String toString() {
-		return "Person [id=" + id + ", fname=" + fname + ", lname=" + lname + ", email=" + email + ", username="
-				+ username + ", password=" + password + ", roles=" + roles + ", appointments=" + appointments
-				+ ", sessions=" + sessions + "]";
+		return "Person{" +
+				"id=" + id +
+				", fname='" + fname + '\'' +
+				", lname='" + lname + '\'' +
+				", email='" + email + '\'' +
+				", username='" + username + '\'' +
+				", password='" + password + '\'' +
+				", roles=" + roles +
+				'}';
 	}
 
 	public Person(String fname, String lname, String email, String username, String password, Collection<Role> roles) {

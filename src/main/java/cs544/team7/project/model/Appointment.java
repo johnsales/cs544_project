@@ -11,7 +11,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Entity
-@Getter @Setter @NoArgsConstructor @ToString
+@Getter @Setter @NoArgsConstructor
 public class Appointment {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,5 +30,16 @@ public class Appointment {
 		this.session = session;
 		client.addAppointment(this);
 		session.addAppointment(this);
+	}
+
+	@Override
+	public String toString() {
+		return "Appointment{" +
+				"id=" + id +
+				", requestTime=" + requestTime +
+				", status=" + status +
+				", client=" + client +
+				", session=" + session +
+				'}';
 	}
 }

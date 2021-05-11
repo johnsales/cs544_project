@@ -86,11 +86,14 @@ class AppointmentServiceTest {
 
     @Test
     void canCancelAppointmentTest() {
+        // given
+        person.addRole(new Role(ADMIN));
         // when
-        underTest.cancelAppointment(appointment);
+        boolean result = underTest.cancelAppointment(person, appointment);
 
         // then
         assertThat(appointment.getStatus()).isEqualTo(CANCELED);
+        assertTrue(result);
         assertFalse(session.getAppointments().contains(appointment));
     }
 
@@ -100,7 +103,7 @@ class AppointmentServiceTest {
         appointment.setStatus(APPROVED);
 
         // when
-        underTest.cancelAppointment(appointment);
+        underTest.cancelAppointment(person, appointment);
 
         // then
         assertThat(appointment.getStatus()).isEqualTo(CANCELED);
@@ -118,7 +121,7 @@ class AppointmentServiceTest {
         appointment.setStatus(CANCELED);
 
         // when
-        underTest.cancelAppointment(appointment);
+        underTest.cancelAppointment(person, appointment);
 
         // then
         verify(repo, never()).save(appointment);
@@ -128,15 +131,20 @@ class AppointmentServiceTest {
 
     @Test
     void SessionExpiredCancelAppointmentTest() {
+        // given
         session.setDate(LocalDate.now().minusDays(1));
+        // when
+        boolean result = underTest.cancelAppointment(person, appointment);
         // then
-        assertThatThrownBy(() ->underTest.cancelAppointment(new Appointment(person, session)));
+        assertFalse(result);
+        //assertThatThrownBy(() ->underTest.cancelAppointment(person, new Appointment(person, session)));
     }
 
     @Test
     void getAllPendingAppointmentsForSessionTest() {
         // when
-        List<Appointment> appointments = underTest.getAllPendingAppointmentsForSession(session);
+        List<Appointment> appointments = underTest.getAllPendingAppointmentsForSession(
+                person, session);
 
         // then
         appointments.forEach(a -> {
@@ -148,7 +156,7 @@ class AppointmentServiceTest {
     @Test
     void approveAppointmentTest() {
         // when
-        underTest.approveAppointment(appointment);
+        underTest.approveAppointment(person, appointment);
 
         // then
         assertTrue(appointment.getStatus() == APPROVED);
@@ -158,21 +166,19 @@ class AppointmentServiceTest {
 
     @Test
     void deleteAppointment() {
-        Appointment app = new Appointment(person, session);
         // when
-        underTest.deleteAppointment(app);
+        underTest.deleteAppointment(person, appointment);
         // then
-        verify(repo).delete(app);
-        assertFalse(session.getAppointments().contains(app));
-        assertFalse(person.getAppointments().contains(app));
+        verify(repo).delete(appointment);
+        assertFalse(session.getAppointments().contains(appointment));
+        assertFalse(person.getAppointments().contains(appointment));
     }
 
     @Test
     void updateAppointment() {
-        Appointment app = new Appointment(person, session);
         // when
-        underTest.updateAppointment(app);
+        underTest.updateAppointment(person, appointment);
         // then
-        verify(repo).save(app);
+        verify(repo).save(appointment);
     }
 }
