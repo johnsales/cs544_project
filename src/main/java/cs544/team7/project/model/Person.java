@@ -59,6 +59,8 @@ public class Person {
 				", roles=" + roles +
 				'}';
 	}
+	
+
 
 	public Person(String fname, String lname, String email, String username, String password, Collection<Role> roles) {
 		this.fname = fname;
