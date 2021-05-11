@@ -13,6 +13,10 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
+import org.springframework.lang.Nullable;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -28,8 +32,10 @@ public class Session {
 	private String location;
 	@ManyToOne
 	@JoinColumn(name = "person_id")
+	@JsonIgnore
 	private Person provider;
 	@OneToMany(mappedBy = "session")
+	@JsonIgnore
 	private Collection<Appointment> appointments;
 	
 	public Session(LocalDate date, LocalTime startTime, int duration, String location, Person provider) {
