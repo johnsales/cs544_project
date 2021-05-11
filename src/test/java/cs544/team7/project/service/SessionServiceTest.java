@@ -19,8 +19,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class SessionServiceTest {
@@ -61,6 +60,15 @@ class SessionServiceTest {
     }
 
     @Test
+    void alreadyExistsSessionCreateSessionTest() {
+        // given
+        when(repo.findById(sampleSession.getId())).thenReturn(java.util.Optional.ofNullable(sampleSession));
+        // when
+        // then
+        assertThatThrownBy(() -> underTest.createSession(sampleSession));
+    }
+
+    @Test
     void assignNotProviderCreateSessionTest() {
         // given
         sampleSession.getProvider().removeRole(new Role(RoleType.PROVIDER));
@@ -81,6 +89,11 @@ class SessionServiceTest {
 
     @Test
     void getAllAvailableSessionsTest() {
+        Appointment appointment2 = new Appointment(new Person(), sampleSession);
+        appointment2.setStatus(APPROVED);
+        when(repo.findAll()).thenReturn(Arrays.asList(
+                sampleSession
+        ));
         // when
         List<Session> sessions = underTest.getAllAvailableSessions();
         // then
@@ -99,6 +112,8 @@ class SessionServiceTest {
 
     @Test
     void getSessionByIdTest() {
+        // given
+        when(repo.findById(1)).thenReturn(java.util.Optional.ofNullable(sampleSession));
         // when
         Session session = underTest.getSessionById(1);
         // then
@@ -107,6 +122,8 @@ class SessionServiceTest {
 
     @Test
     void updateSessionTest() {
+        // given
+        when(repo.findById(sampleSession.getId())).thenReturn(java.util.Optional.ofNullable(sampleSession));
         // when
         underTest.updateSession(sampleSession);
         // then
@@ -115,6 +132,7 @@ class SessionServiceTest {
 
     @Test
     void deleteSessionTest() {
+        when(repo.findById(sampleSession.getId())).thenReturn(java.util.Optional.ofNullable(sampleSession));
         // when
         underTest.deleteSession(sampleSession);
         // then

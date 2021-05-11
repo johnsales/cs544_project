@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 public class EmailService implements IEmailService {
     @Override
     public void sendMessage(Person p, String message) {
-       
+
         //log.log(Level.INFO, "Sent to " + p.getEmail() + " , message = " +  message);
     }
 }
