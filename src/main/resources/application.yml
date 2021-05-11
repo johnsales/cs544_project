@@ -16,3 +16,12 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
 spring.jpa.hibernate.ddl-auto: create
+#Queue service
+jsa:
+  activemq:
+    queue: email-queue
+
+#useful strings for email service
+#link: https://www.tutorialspoint.com/spring_boot/spring_boot_sending_email.htm
+emailProducer: user.email.cs544@gmail.com
+passwordEmailProducer: User12345
