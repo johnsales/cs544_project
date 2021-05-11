@@ -1,7 +1,9 @@
 package cs544.team7.project.service;
 
-import cs544.team7.project.model.Person;
+import cs544.team7.project.model.Email;
+
+import javax.mail.MessagingException;
 
 public interface IEmailService {
-	public void sendMessage(Person p, String message);
+	void sendMessage(Email e) throws MessagingException;
 }

@@ -31,13 +31,11 @@ public class Person {
 	@JoinTable(name = "Person_Role", 
 			   joinColumns = @JoinColumn(name = "person_id"), 
 			   inverseJoinColumns = @JoinColumn(name = "role_id"))
-	private Collection<Role> roles = new ArrayList<>();
+	private Collection<Role> roles;
 	@OneToMany(mappedBy = "client")
-	private Collection<Appointment> appointments = new ArrayList<>();
+	private Collection<Appointment> appointments;
 	@OneToMany(mappedBy = "provider")
-	private Collection<Session> sessions = new ArrayList<>();
-	
-
+	private Collection<Session> sessions;
 
 	public Person(String fname, String lname, String email, String username, String password, Collection<Role> roles) {
 		this.fname = fname;
@@ -45,6 +43,9 @@ public class Person {
 		this.email = email;
 		this.username = username;
 		this.password = password;
+		this.roles = roles;
+		this.sessions = new ArrayList<>();
+		this.appointments = new ArrayList<>();
 		this.roles = roles;
 	}
 
