@@ -3,7 +3,6 @@ package cs544.team7.project.model;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
-
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
