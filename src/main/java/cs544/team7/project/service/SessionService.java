@@ -26,13 +26,10 @@ public class SessionService implements ISessionService {
         sessionRepository.findById(session.getId()).ifPresent(s -> {
             throw new RuntimeException("Already exists!");
         });
-
         if(session.getDate().isEqual(LocalDate.now()) || session.getDate().isBefore(LocalDate.now()))
             throw new RuntimeException("Late date!");
-
         if(session.getProvider() == null || !session.getProvider().getRoles().contains(new Role(RoleType.PROVIDER)))
             throw new RuntimeException("Do not have a provider!");
-
         return sessionRepository.save(session);
     }
 
@@ -44,9 +41,7 @@ public class SessionService implements ISessionService {
         return
         sessionRepository.findAll()
                 .stream()
-                .filter(session -> session.getDate().isAfter(LocalDate.now())
-                || (session.getDate().isEqual(LocalDate.now())
-                && session.getStartTime().isAfter(LocalTime.now())))
+                .filter(session -> session.getDate().isAfter(LocalDate.now()) || (session.getDate().isEqual(LocalDate.now()) && session.getStartTime().isAfter(LocalTime.now())))
                 .filter(session -> {
                     for(Appointment a : session.getAppointments())
                             if (a.getStatus() == APPROVED) return false;
@@ -64,9 +59,9 @@ public class SessionService implements ISessionService {
     public Session updateSession(Session session) {
         Session s2 = sessionRepository.findById(session.getId()).orElseThrow(RuntimeException::new);
         if (s2.getId() == session.getId()) {
-            return sessionRepository.save(session);
+            sessionRepository.save(session);
         }
-        return null;
+        return session;
     }
 
     public Session deleteSession(Session session) {

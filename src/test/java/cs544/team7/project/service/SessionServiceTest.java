@@ -13,6 +13,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static cs544.team7.project.model.AppointmentStatus.APPROVED;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -89,10 +90,16 @@ class SessionServiceTest {
 
     @Test
     void getAllAvailableSessionsTest() {
+        sampleSession.setStartTime(LocalTime.now().plusHours(2));
         Appointment appointment2 = new Appointment(new Person(), sampleSession);
         appointment2.setStatus(APPROVED);
         when(repo.findAll()).thenReturn(Arrays.asList(
-                sampleSession
+                sampleSession, new Session(LocalDate.now().plusDays(4),
+                        LocalTime.now().plusHours(5),
+                        120,
+                        "Verril Hall",
+                        new Person("Mike", "Doe", "mdoe@gmail.com", "mdoe", "p@s$w0rD",
+                                new ArrayList<>(Arrays.asList(new Role(RoleType.PROVIDER)))))
         ));
         // when
         List<Session> sessions = underTest.getAllAvailableSessions();
@@ -113,7 +120,8 @@ class SessionServiceTest {
     @Test
     void getSessionByIdTest() {
         // given
-        when(repo.findById(1)).thenReturn(java.util.Optional.ofNullable(sampleSession));
+        Optional<Session> ss = java.util.Optional.ofNullable(sampleSession);
+        when(repo.findById(1)).thenReturn(ss);
         // when
         Session session = underTest.getSessionById(1);
         // then
@@ -125,9 +133,10 @@ class SessionServiceTest {
         // given
         when(repo.findById(sampleSession.getId())).thenReturn(java.util.Optional.ofNullable(sampleSession));
         // when
-        underTest.updateSession(sampleSession);
+        Session s = underTest.updateSession(sampleSession);
         // then
         verify(repo).save(sampleSession);
+        assertTrue(sampleSession.equals(s));
     }
 
     @Test
