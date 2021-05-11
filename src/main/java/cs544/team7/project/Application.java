@@ -69,6 +69,8 @@ public class Application {
 	public static void main(String[] args) throws MessagingException, IllegalAccessException {
 		ApplicationContext context = SpringApplication.run(Application.class, args);
 
+		IEmailService service = context.getBean("emailServiceProducer",EmailServiceProducer.class);
+		service.sendMessage("jmsvsmorone@gmail.com","Boby Message from Heroku (delete after)");
 	}
 
 
