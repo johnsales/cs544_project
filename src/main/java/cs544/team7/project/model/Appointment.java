@@ -21,10 +21,10 @@ public class Appointment {
 	private LocalDateTime requestTime = LocalDateTime.now();
 	@NotNull
 	private AppointmentStatus status = AppointmentStatus.PENDING;
-	@ManyToOne(cascade = CascadeType.PERSIST)
+	@ManyToOne
 	@JoinColumn(name = "person_id")
 	private Person client;
-	@ManyToOne(cascade = CascadeType.PERSIST)
+	@ManyToOne
 	@JoinColumn(name = "session_id")
 	private Session session;
 	

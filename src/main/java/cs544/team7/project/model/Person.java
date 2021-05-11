@@ -5,19 +5,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -41,13 +35,15 @@ public class Person {
 	@Size(min=3)
 	//@Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–[{}]:;',?/*~$^+=<>]).{8,20}$")
 	private String password;
-	@ManyToMany
+	@ManyToMany(cascade = CascadeType.PERSIST)
 	@JoinTable(name = "Person_Role", 
 			   joinColumns = @JoinColumn(name = "person_id"), 
 			   inverseJoinColumns = @JoinColumn(name = "role_id"))
 	private Collection<Role> roles = new LinkedList<>();
+	@JsonIgnore
 	@OneToMany(mappedBy = "client", orphanRemoval = true)
 	private Collection<Appointment> appointments = new ArrayList<>();
+	@JsonIgnore
 	@OneToMany(mappedBy = "provider", orphanRemoval = true)
 	private Collection<Session> sessions = new ArrayList<>();
 

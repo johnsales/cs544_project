@@ -6,16 +6,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -37,6 +31,7 @@ public class Session {
 	@JoinColumn(name = "person_id")
 	private Person provider;
 	@OneToMany(mappedBy = "session", orphanRemoval = true)
+	@JsonIgnore
 	private Collection<Appointment> appointments = new ArrayList<>();
 	
 	public Session(LocalDate date, LocalTime startTime, int duration, String location, Person provider) {
