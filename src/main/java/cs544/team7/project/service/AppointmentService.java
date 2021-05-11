@@ -6,6 +6,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.mail.MessagingException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Collection;
@@ -31,7 +32,7 @@ public class AppointmentService implements IAppointmentService {
     }
 
     @Override
-    public Appointment makeReservation(Person p, Session s) throws IllegalAccessException {
+    public Appointment makeReservation(Person p, Session s) throws IllegalAccessException, MessagingException {
         if(p == null || s == null) throw new IllegalArgumentException("Argument is null");
         boolean sessionApproved =  s.getAppointments().stream().filter(
                 appointment -> appointment.getStatus() == APPROVED
@@ -52,9 +53,11 @@ public class AppointmentService implements IAppointmentService {
     }
 
     @Override
-    public boolean cancelAppointment(Person p, Appointment a) {
+    public boolean cancelAppointment(Person p, Appointment a) throws MessagingException {
         if(a == null || a.getClient() == null || a.getSession()==null)
             return false;
+
+        AppointmentStatus prevStatus = PENDING;
 
         // Checking if session start time is not in the past
         if(LocalDate.now().isAfter(a.getSession().getDate()) ||
@@ -65,27 +68,33 @@ public class AppointmentService implements IAppointmentService {
 
         Collection<Role> roles = p.getRoles();
 
-        if(roles.contains(new Role(RoleType.ADMIN))) {
+        if(roles.contains(new Role(RoleType.ADMIN)) || roles.contains(new Role(PROVIDER))) {
             //RoleType is ADMIN & session start time is not past
-            a.setStatus(AppointmentStatus.CANCELED);
-            a.getSession().removeAppointment(a);
-            updateAppointment(p, a);
-        }
-        else if(roles.contains(new Role(RoleType.CLIENT)) || roles.contains(new Role(PROVIDER))) {
-            // RoleType is not ADMIN --> Checking if session start time is after more than 48 hrs
-            if(LocalTime.now().plusHours(48).isBefore(a.getSession().getStartTime())){
-                return false;
-            }
+            prevStatus = a.getStatus();
             a.getSession().removeAppointment(a);
             if(a.getStatus() != CANCELED) {
                 a.setStatus(AppointmentStatus.CANCELED);
                 updateAppointment(p, a);
             }
         }
-        else {
-            return false;
+        else if(roles.contains(new Role(RoleType.CLIENT))) {
+            // RoleType is not ADMIN --> Checking if session start time is after more than 48 hrs
+            if(LocalTime.now().plusHours(48).isBefore(a.getSession().getStartTime())){
+                return false;
+            }
+            prevStatus = a.getStatus();
+            a.getSession().removeAppointment(a);
+            if(a.getStatus() != CANCELED) {
+                a.setStatus(AppointmentStatus.CANCELED);
+                updateAppointment(p, a);
+            }
         }
 
+        if(prevStatus == APPROVED) {
+            List<Appointment> appointments = getAllPendingAppointmentsForSession(p, a.getSession());
+            if(!appointments.isEmpty() && appointments.get(0) != null)
+                approveAppointment(p, appointments.get(0));
+        }
         return true;
     }
 
@@ -121,12 +130,39 @@ public class AppointmentService implements IAppointmentService {
         return s.getAppointments().stream().filter(
                 appointment -> appointment.getStatus() == PENDING
         ).sorted(
-                Comparator.comparing(app -> app.getRequestTime())
+                Comparator.comparing(Appointment::getRequestTime)
         ).collect(Collectors.toList());
     }
 
     @Override
-    public boolean approveAppointment(Person p, Appointment a) {
+    public Appointment getAppintmentById(int id) {
+        return appointmentRepository.findById(id).orElse(null);
+    }
+
+    @Override
+    public List<Appointment> getApprovedAppointments() {
+        return appointmentRepository.findAll().stream()
+                .filter(a -> a.getStatus() == APPROVED)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Appointment> getCanceledAppointments() {
+        return appointmentRepository.findAll().stream()
+                .filter(a -> a.getStatus() == CANCELED)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Appointment> getAllAppointments() {
+        return appointmentRepository.findAll()
+                .stream()
+                .sorted(Comparator.comparing(Appointment::getRequestTime))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public boolean approveAppointment(Person p, Appointment a) throws MessagingException {
         if(a == null || a.getClient() == null || a.getSession()==null)
             return false;
 

@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,7 +17,9 @@ public class Appointment {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
+	@NotNull
 	private LocalDateTime requestTime = LocalDateTime.now();
+	@NotNull
 	private AppointmentStatus status = AppointmentStatus.PENDING;
 	@ManyToOne(cascade = CascadeType.PERSIST)
 	@JoinColumn(name = "person_id")

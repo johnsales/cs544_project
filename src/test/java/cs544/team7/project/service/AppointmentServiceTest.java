@@ -9,6 +9,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import javax.mail.MessagingException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
@@ -45,7 +46,7 @@ class AppointmentServiceTest {
     }
 
     @Test
-    void canMakeReservationTest() throws IllegalAccessException {
+    void canMakeReservationTest() throws IllegalAccessException, MessagingException {
         // when
         Appointment a = underTest.makeReservation(person, session);
 
@@ -85,7 +86,7 @@ class AppointmentServiceTest {
     }
 
     @Test
-    void canCancelAppointmentTest() {
+    void canCancelAppointmentTest() throws MessagingException {
         // given
         person.addRole(new Role(ADMIN));
         // when
@@ -98,7 +99,7 @@ class AppointmentServiceTest {
     }
 
     @Test
-    void canCancelAppointmentThatWasApprovedTest() {
+    void canCancelAppointmentThatWasApprovedTest() throws MessagingException {
         // given
         appointment.setStatus(APPROVED);
 
@@ -116,7 +117,7 @@ class AppointmentServiceTest {
     }
 
     @Test
-    void tryCancelAppointmentWhenItAlreadyCanceledTest() {
+    void tryCancelAppointmentWhenItAlreadyCanceledTest() throws MessagingException {
         // given
         appointment.setStatus(CANCELED);
 
@@ -130,7 +131,7 @@ class AppointmentServiceTest {
     }
 
     @Test
-    void SessionExpiredCancelAppointmentTest() {
+    void SessionExpiredCancelAppointmentTest() throws MessagingException {
         // given
         session.setDate(LocalDate.now().minusDays(1));
         // when
@@ -154,14 +155,14 @@ class AppointmentServiceTest {
     }
 
     @Test
-    void approveAppointmentTest() {
+    void approveAppointmentTest() throws MessagingException {
         // when
         underTest.approveAppointment(person, appointment);
 
         // then
         assertTrue(appointment.getStatus() == APPROVED);
         verify(repo).save(appointment);
-        verify(emailService).sendMessage(any(), anyString());
+        verify(emailService).sendMessage(any(Person.class), anyString());
     }
 
     @Test
@@ -180,5 +181,43 @@ class AppointmentServiceTest {
         underTest.updateAppointment(person, appointment);
         // then
         verify(repo).save(appointment);
+    }
+
+    @Test
+    void canGetAppintmentById() {
+        // when
+        underTest.getAppintmentById(1);
+        // then
+        verify(repo).findById(1);
+    }
+
+    @Test
+    void canGetApprovedAppointmentsTest() {
+        // when
+        List<Appointment> appointments = underTest.getApprovedAppointments();
+        // then
+        verify(repo).findAll();
+        appointments.forEach(
+                a -> assertTrue(a.getStatus() == APPROVED)
+        );
+    }
+
+    @Test
+    void canGetCanceledAppointmentsTest() {
+        // when
+        List<Appointment> appointments = underTest.getCanceledAppointments();
+        // then
+        verify(repo).findAll();
+        appointments.forEach(
+                a -> assertTrue(a.getStatus() == CANCELED)
+        );
+    }
+
+    @Test
+    void getAllAppointments() {
+        // when
+        List<Appointment> appointments = underTest.getAllAppointments();
+        // then
+        verify(repo).findAll();
     }
 }

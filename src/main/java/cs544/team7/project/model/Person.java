@@ -13,6 +13,10 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,10 +28,18 @@ import lombok.Setter;
 public class Person {
 	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
+	@NotNull
 	private String fname;
+	@NotNull
 	private String lname;
+	@Email
 	private String email;
+	@NotNull
+	@Size(min=3)
 	private String username;
+	@NotNull
+	@Size(min=3)
+	//@Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–[{}]:;',?/*~$^+=<>]).{8,20}$")
 	private String password;
 	@ManyToMany
 	@JoinTable(name = "Person_Role", 

@@ -14,6 +14,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.validation.constraints.NotNull;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,9 +25,13 @@ import lombok.Setter;
 public class Session {
 	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
+	@NotNull
 	private LocalDate date;
+	@NotNull
 	private LocalTime startTime;
+	@NotNull
 	private int duration;
+	@NotNull
 	private String location;
 	@ManyToOne
 	@JoinColumn(name = "person_id")
