@@ -1,4 +1,4 @@
-package cs544.team7.project.service;
+package cs544.team7.project.jms;
 
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +18,7 @@ public class LogMessageListener implements MessageListener {
     public void onMessage(Message message) {
         if (message instanceof TextMessage) {
             try {
-                log.info(((TextMessage) message).getText());
+                log.info("Message sent "+((TextMessage) message).getText());
             }
             catch (JMSException ex) {
                 throw new RuntimeException(ex);
