@@ -32,7 +32,9 @@ public class StartUpRunner implements CommandLineRunner {
     @Autowired
     private SessionRepository sessionRepository;
 
-
+    @Autowired
+    private AppointmentService appointmentService;
+    
     @Transactional
     public void run(String...args) throws Exception {
         PasswordEncoder encoder = new BCryptPasswordEncoder();
@@ -45,7 +47,7 @@ public class StartUpRunner implements CommandLineRunner {
                 encoder.encode("1234"),
                 Arrays.asList(clientRole));
         Person client2 = new Person(
-                "John", "Smith", "jsmith@gmail.com",
+                "John", "Smith", "jmsvsmorone@gmail.com",
                 "jsmith",
                 encoder.encode("1234"),
                 Arrays.asList(clientRole));
@@ -75,6 +77,6 @@ public class StartUpRunner implements CommandLineRunner {
         personRepository.save(provider);
         sessionRepository.save(session);
         appointmentRepository.save(appointment);
-        appointmentRepository.save(appointment2);
+        appointmentService.makeReservation(client2, session);
     }
 }

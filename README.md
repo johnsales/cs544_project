@@ -30,10 +30,18 @@ after that only admin can make changes.
 * Send an email (to the creator of appointment, counselor and customer), each time an 
 appointment is created or modified. 
 
+
+### Class Diagram
+<p>
+    <img src="images/class-diagram.png" alt="Logo" width="80" height="80">
+</p>
+
 ### Technologies
 
 This section should list any major frameworks used to built the project.
+* [Spring](https://spring.io/)
 * [Hibernate](https://hibernate.org/)
+* [ActiveMQ](https://activemq.apache.org/)
 
 
 <!-- MARKDOWN LINKS & IMAGES -->
