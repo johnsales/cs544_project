@@ -11,12 +11,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping("admin")
-public class AdminController {
+@RequestMapping("provider")
+public class ProviderController {
     @Autowired
     private SessionService sessionService;
 
@@ -27,44 +26,35 @@ public class AdminController {
     private PersonRepository personRepository;
 
     @PostMapping("sessions")
-    public Session createSession(@RequestBody @Valid Session session) {
+    public Session createSession(@RequestBody Session session) {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Person person = personRepository.getPersonByUsername(user.getUsername());
+        session.setProvider(person);
         return sessionService.createSession(session);
     }
 
     @GetMapping("sessions")
     public List<Session> getSessions() {
-        return sessionService.getAllSessions();
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Person person = personRepository.getPersonByUsername(user.getUsername());
+        return sessionService.getAllSessionsByProvider(person);
     }
 
     @GetMapping("sessions/available")
     public List<Session> getAvailableSessions() {
-        return sessionService.getAllAvailableSessions();
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Person person = personRepository.getPersonByUsername(user.getUsername());
+        return sessionService.getAllAvailableSessionsByProvider(person);
     }
 
     @GetMapping("sessions/{id}")
     public Session getSessionById(@PathVariable(name = "id") int id) {
-        return sessionService.getSessionById(id);
-    }
-
-    @PutMapping("sessions/{id}")
-    public Session updateSession(@PathVariable(name = "id") int id,
-                                  @RequestBody @Valid Session session) {
-        session.setId(id);
-        return sessionService.updateSession(session);
-    }
-
-    @PatchMapping("sessions/{id}")
-    public Session updateSession2(@PathVariable(name = "id") int id,
-                                 @RequestBody Session session) {
-        session.setId(id);
-        return sessionService.updateSession(session);
-    }
-
-    @DeleteMapping("sessions/{id}")
-    public Session updateSession(@PathVariable(name = "id") int id) {
-        return sessionService.deleteSession(
-                sessionService.getSessionById(id)
-        );
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Person person = personRepository.getPersonByUsername(user.getUsername());
+        Session s = sessionService.getSessionById(id);
+        if(!s.getProvider().equals(person))
+            return null;
+        return s;
     }
 
     @PutMapping("appointments/{appointmentId}")
@@ -73,6 +63,8 @@ public class AdminController {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Person person = personRepository.getPersonByUsername(user.getUsername());
         Appointment appointment = appointmentService.getAppintmentById(id);
+        if(!appointment.getSession().getProvider().equals(person))
+            return false;
         return appointmentService.approveAppointment(person, appointment);
     }
 }

@@ -8,6 +8,8 @@ import cs544.team7.project.repository.PersonRepository;
 import cs544.team7.project.service.AppointmentService;
 import cs544.team7.project.service.SessionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
 
 import javax.mail.MessagingException;
@@ -32,9 +34,20 @@ public class ClientController {
 
     @PostMapping("appointments")
     public Appointment createAppointment(@RequestBody PostForAppointment data) throws MessagingException, IllegalAccessException {
-        Person person = personRepository.getById(data.getClient_id());
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        System.out.println(user.getUsername());
+        Person person = personRepository.getPersonByUsername(user.getUsername());
+        System.out.println(person);
         Session session = sessionService.getSessionById(data.getSession_id());
         return appointmentService.makeReservation(person, session);
+    }
+
+    @DeleteMapping("appointments/{appointmentId}")
+    public boolean cancelAppointment(@PathVariable("appointmentId") int id) {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Person person = personRepository.getPersonByUsername(user.getUsername());
+        Appointment appointment = appointmentService.getAppintmentById(id);
+        return appointmentService.cancelAppointment(person, appointment);
     }
 
 }

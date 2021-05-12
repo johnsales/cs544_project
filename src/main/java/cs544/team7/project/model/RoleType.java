@@ -5,7 +5,7 @@ import lombok.ToString;
 
 @Getter @ToString
 public enum RoleType {
-	CLIENT("Client"), ADMIN("Admin"), PROVIDER("Provider");
+	CLIENT("CLIENT"), ADMIN("ADMIN"), PROVIDER("PROVIDER");
 	private String type;
 
 	private RoleType(String type) {

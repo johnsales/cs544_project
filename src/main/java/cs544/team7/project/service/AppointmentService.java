@@ -1,5 +1,7 @@
 package cs544.team7.project.service;
 
+import cs544.team7.project.exception.AppointmentNotFoundException;
+import cs544.team7.project.exception.OldSessionException;
 import cs544.team7.project.model.*;
 import cs544.team7.project.repository.AppointmentRepository;
 import lombok.extern.log4j.Log4j2;
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Service;
 import javax.mail.MessagingException;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -20,6 +23,8 @@ import static cs544.team7.project.model.RoleType.*;
 @Service
 @Log4j2
 public class AppointmentService implements IAppointmentService {
+    private Person admin = new Person("", "", "", "", "",
+            Arrays.asList(new Role(ADMIN)));
     private AppointmentRepository  appointmentRepository;
     @Autowired
     private IEmailService emailService;
@@ -32,7 +37,7 @@ public class AppointmentService implements IAppointmentService {
     }
 
     @Override
-    public Appointment makeReservation(Person p, Session s) throws IllegalAccessException, MessagingException {
+    public Appointment makeReservation(Person p, Session s) {
         if(p == null || s == null) throw new IllegalArgumentException("Argument is null");
         boolean sessionApproved =  s.getAppointments().stream().filter(
                 appointment -> appointment.getStatus() == APPROVED
@@ -44,16 +49,17 @@ public class AppointmentService implements IAppointmentService {
         if(sessionApproved) throw new IllegalStateException("Sesssion has already been assigned!");
         if(LocalDate.now().isAfter(s.getDate()) ||
                 (LocalDate.now().isEqual(s.getDate()) && LocalTime.now().isAfter(s.getStartTime())))
-            throw new IllegalStateException("Session has been finished!");
-        if(!isClient) throw new IllegalAccessException("Person is not client");
+            throw new OldSessionException();
+        if(!isClient) throw new RuntimeException("Person is not client");
         emailService.sendMessage(p, "You have successfully created Appointment!");
+        emailService.sendMessage(s.getProvider(), "Client has successfully created Appointment!");
         Appointment appointment = new Appointment(p, s);
         appointmentRepository.save(appointment);
         return appointment;
     }
 
     @Override
-    public boolean cancelAppointment(Person p, Appointment a) throws MessagingException {
+    public boolean cancelAppointment(Person p, Appointment a) {
         if(a == null || a.getClient() == null || a.getSession()==null)
             return false;
 
@@ -77,9 +83,9 @@ public class AppointmentService implements IAppointmentService {
                 updateAppointment(p, a);
             }
         }
-        else if(roles.contains(new Role(RoleType.CLIENT))) {
+        if(roles.contains(new Role(RoleType.CLIENT))) {
             // RoleType is not ADMIN --> Checking if session start time is after more than 48 hrs
-            if(LocalTime.now().plusHours(48).isBefore(a.getSession().getStartTime())){
+            if(LocalTime.now().plusHours(48).isAfter(a.getSession().getStartTime())){
                 return false;
             }
             prevStatus = a.getStatus();
@@ -92,38 +98,15 @@ public class AppointmentService implements IAppointmentService {
 
         if(prevStatus == APPROVED) {
             List<Appointment> appointments = getAllPendingAppointmentsForSession(p, a.getSession());
-            if(!appointments.isEmpty() && appointments.get(0) != null)
-                approveAppointment(p, appointments.get(0));
+            if(!appointments.isEmpty() && appointments.get(0) != null) {
+                approveAppointment(admin, appointments.get(0));
+            }
         }
+        emailService.sendMessage(a.getClient(), "Your appointment canceled!");
+        emailService.sendMessage(a.getSession().getProvider(), "Appointment canceled!");
         return true;
     }
 
-/*    @Override
-    public boolean cancelAppointment(Appointment a) {
-        if(a == null) throw new IllegalArgumentException("Argument is null");
-        Person p = a.getClient();
-        Session s = a.getSession();
-        if(LocalDate.now().isAfter(s.getDate()) ||
-                (LocalDate.now().isEqual(s.getDate()) && LocalTime.now().isAfter(s.getStartTime())))
-            throw new IllegalStateException("Session has been finished!");
-
-        s.removeAppointment(a);
-
-        switch (a.getStatus()) {
-            case PENDING:   a.setStatus(CANCELED);
-                            updateAppointment(a);
-                            break;
-            case APPROVED:  a.setStatus(CANCELED);
-                      updateAppointment(a);
-                      getAllPendingAppointmentsForSession(s).stream()
-                              .findFirst().ifPresent(a2 -> approveAppointment(a2));
-                break;
-            default:  return true;
-        }
-        emailService.sendMessage(p, "Your Appointment has been canceled!");
-        return true;
-    }
-*/
     @Override
     public List<Appointment> getAllPendingAppointmentsForSession(Person p, Session s) {
         if(s == null) throw new IllegalArgumentException("Argument is null");
@@ -136,7 +119,7 @@ public class AppointmentService implements IAppointmentService {
 
     @Override
     public Appointment getAppintmentById(int id) {
-        return appointmentRepository.findById(id).orElse(null);
+        return appointmentRepository.findById(id).orElseThrow(AppointmentNotFoundException::new);
     }
 
     @Override
@@ -162,7 +145,7 @@ public class AppointmentService implements IAppointmentService {
     }
 
     @Override
-    public boolean approveAppointment(Person p, Appointment a) throws MessagingException {
+    public boolean approveAppointment(Person p, Appointment a) {
         if(a == null || a.getClient() == null || a.getSession()==null)
             return false;
 
@@ -186,28 +169,20 @@ public class AppointmentService implements IAppointmentService {
 
         return false;
     }
-/*
-    @Override
-    public boolean approveAppointment(Appointment a) {
-        if(a == null) throw new IllegalArgumentException("Argument is null");
-        a.setStatus(APPROVED);
-        updateAppointment(a);
-        emailService.sendMessage(a.getClient(),
-                "Your appointment has been approved!");
-        return true;
-    }
-*/
+
     @Override
     public void deleteAppointment(Person p, Appointment a) {
         a.getClient().removeAppointment(a);
         a.getSession().removeAppointment(a);
         appointmentRepository.delete(a);
-        log.info("An appointment has been deleted!");
+        emailService.sendMessage(a.getClient(), "Your appointment deleted!");
+        emailService.sendMessage(a.getSession().getProvider(), "Appointment deleted!");
     }
 
     @Override
     public void updateAppointment(Person p,Appointment a) {
         appointmentRepository.save(a);
-        log.info("An appointment has been updated!");
+        emailService.sendMessage(a.getClient(), "Your appointment updated!");
+        emailService.sendMessage(a.getSession().getProvider(), "Appointment updated!");
     }
 }

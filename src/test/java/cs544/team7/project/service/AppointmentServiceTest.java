@@ -131,6 +131,18 @@ class AppointmentServiceTest {
     }
 
     @Test
+    void UserCannotCancelAppointmentBefore48HoursTest() throws MessagingException {
+        // given
+        person.removeRole(providerRole);
+        session.setDate(LocalDate.now().plusDays(1));
+        // when
+        boolean result = underTest.cancelAppointment(person, appointment);
+        // then
+        assertFalse(result);
+        //assertThatThrownBy(() ->underTest.cancelAppointment(person, new Appointment(person, session)));
+    }
+
+    @Test
     void SessionExpiredCancelAppointmentTest() throws MessagingException {
         // given
         session.setDate(LocalDate.now().minusDays(1));
