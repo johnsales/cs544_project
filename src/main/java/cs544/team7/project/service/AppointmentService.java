@@ -32,7 +32,7 @@ public class AppointmentService implements IAppointmentService {
     }
 
     @Override
-    public Appointment makeReservation(Person p, Session s) throws IllegalAccessException, MessagingException {
+    public Appointment makeReservation(Person p, Session s) {
         if(p == null || s == null) throw new IllegalArgumentException("Argument is null");
         boolean sessionApproved =  s.getAppointments().stream().filter(
                 appointment -> appointment.getStatus() == APPROVED
@@ -45,7 +45,7 @@ public class AppointmentService implements IAppointmentService {
         if(LocalDate.now().isAfter(s.getDate()) ||
                 (LocalDate.now().isEqual(s.getDate()) && LocalTime.now().isAfter(s.getStartTime())))
             throw new IllegalStateException("Session has been finished!");
-        if(!isClient) throw new IllegalAccessException("Person is not client");
+        if(!isClient) throw new RuntimeException("Person is not client");
         emailService.sendMessage(p, "You have successfully created Appointment!");
         Appointment appointment = new Appointment(p, s);
         appointmentRepository.save(appointment);
@@ -53,7 +53,7 @@ public class AppointmentService implements IAppointmentService {
     }
 
     @Override
-    public boolean cancelAppointment(Person p, Appointment a) throws MessagingException {
+    public boolean cancelAppointment(Person p, Appointment a) {
         if(a == null || a.getClient() == null || a.getSession()==null)
             return false;
 
@@ -162,7 +162,7 @@ public class AppointmentService implements IAppointmentService {
     }
 
     @Override
-    public boolean approveAppointment(Person p, Appointment a) throws MessagingException {
+    public boolean approveAppointment(Person p, Appointment a) {
         if(a == null || a.getClient() == null || a.getSession()==null)
             return false;
 
