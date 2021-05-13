@@ -38,11 +38,11 @@ public class LogMessageListener implements MessageListener {
                 log.info("Message sent "+messageString);  
                 
                 //Is better use: Spring JmsTemplate convertAndSend() and receiveAndConvert()
-                String to = messageString.substring(messageString.indexOf(':') + 2, messageString.indexOf(','));
-                String body = messageString.substring(messageString.indexOf(',') + 11, messageString.length());
-                sendEmail(to,body);
+                //String to = messageString.substring(messageString.indexOf(':') + 2, messageString.indexOf(','));
+                //String body = messageString.substring(messageString.indexOf(',') + 11, messageString.length());
+                //sendEmail(to,body);
             }
-            catch (MessagingException | JMSException ex) {
+            catch (/*MessagingException | */JMSException ex) {
                 throw new RuntimeException(ex);
             }
         }
