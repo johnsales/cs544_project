@@ -74,6 +74,7 @@ public class AppointmentService implements IAppointmentService {
 
         Collection<Role> roles = p.getRoles();
 
+
         if(roles.contains(new Role(RoleType.ADMIN)) || roles.contains(new Role(PROVIDER))) {
             //RoleType is ADMIN & session start time is not past
             prevStatus = a.getStatus();
@@ -82,7 +83,7 @@ public class AppointmentService implements IAppointmentService {
                 a.setStatus(AppointmentStatus.CANCELED);
                 updateAppointment(p, a);
             }
-        }
+        }//these two if can become one just checking if is not admin and verifying the 48h rule
         if(roles.contains(new Role(RoleType.CLIENT))) {
             // RoleType is not ADMIN --> Checking if session start time is after more than 48 hrs
             if(LocalTime.now().plusHours(48).isAfter(a.getSession().getStartTime())){
@@ -102,10 +103,45 @@ public class AppointmentService implements IAppointmentService {
                 approveAppointment(admin, appointments.get(0));
             }
         }
-        emailService.sendMessage(a.getClient(), "Your appointment canceled!");
-        emailService.sendMessage(a.getSession().getProvider(), "Appointment canceled!");
+        emailService.sendMessage(a.getClient(), a.getClient().getFname()+" your appointment was canceled for the TM session with "+a.getSession().getProvider().getFname()+" on "+a.getSession().getDate()+" at "+a.getSession().getStartTime());
+        emailService.sendMessage(a.getSession().getProvider(), "Appointment canceled! Client: "+a.getClient().getFname()+", TM Session: "+a.getSession().getDate()+" at "+a.getSession().getStartTime());
         return true;
     }
+
+    public boolean cancelAppointment2(Person p, Appointment a) {
+        if(a == null || a.getClient() == null || a.getSession()==null) return false;
+        AppointmentStatus prevStatus = PENDING;
+
+        // Checking if session start time is not in the past
+        if(LocalDate.now().isAfter(a.getSession().getDate()) || (LocalDate.now().isEqual(a.getSession().getDate())
+                && LocalTime.now().isAfter(a.getSession().getStartTime())))
+            return false;
+
+        Collection<Role> roles = p.getRoles();
+        if(!roles.contains(new Role(ADMIN)) && !roles.contains(new Role(ADMIN))) {
+            // RoleType is not ADMIN OR Provider --> Checking if session start time is after more than 48 hrs
+            if(LocalTime.now().plusHours(48).isAfter(a.getSession().getStartTime()))
+                return false;
+        }
+
+        prevStatus = a.getStatus();
+        a.getSession().removeAppointment(a);
+        if(a.getStatus() != CANCELED) {
+            a.setStatus(AppointmentStatus.CANCELED);
+            updateAppointment(p, a);
+        }
+
+        if(prevStatus == APPROVED) {
+            List<Appointment> appointments = getAllPendingAppointmentsForSession(p, a.getSession());
+            if(!appointments.isEmpty() && appointments.get(0) != null) {
+                approveAppointment(admin, appointments.get(0));
+            }
+        }
+        emailService.sendMessage(a.getClient(), a.getClient().getFname()+" your appointment was canceled for the TM session with "+a.getSession().getProvider().getFname()+" on "+a.getSession().getDate()+" at "+a.getSession().getStartTime());
+        emailService.sendMessage(a.getSession().getProvider(), "Appointment canceled! Client: "+a.getClient().getFname()+", TM Session: "+a.getSession().getDate()+" at "+a.getSession().getStartTime());
+        return true;
+    }
+
 
     @Override
     public List<Appointment> getAllPendingAppointmentsForSession(Person p, Session s) {
@@ -159,11 +195,11 @@ public class AppointmentService implements IAppointmentService {
         }
 
         Collection<Role> roles = p.getRoles();
-        // Only PROVIDER can approve an appointment
+        // Only PROVIDER or ADMIN can approve an appointment
         if(roles.contains(new Role(PROVIDER)) || roles.contains(new Role(ADMIN))) {
             a.setStatus(AppointmentStatus.APPROVED);
             updateAppointment(p, a);
-            emailService.sendMessage(a.getClient(), "Your appointment approved!");
+            emailService.sendMessage(a.getClient(), "Your TM session appointment was approved!");
             return true;
         }
 

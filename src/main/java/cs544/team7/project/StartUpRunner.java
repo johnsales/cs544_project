@@ -77,6 +77,7 @@ public class StartUpRunner implements CommandLineRunner {
         personRepository.save(provider);
         sessionRepository.save(session);
         appointmentRepository.save(appointment);
-        appointmentRepository.save(appointment);
+        //appointmentRepository.save(appointment);
+        appointmentService.makeReservation(client2,session);
     }
 }

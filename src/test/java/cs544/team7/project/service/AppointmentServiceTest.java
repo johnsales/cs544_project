@@ -1,9 +1,11 @@
 package cs544.team7.project.service;
 
-import cs544.team7.project.model.*;
+import cs544.team7.project.model.Appointment;
+import cs544.team7.project.model.Person;
+import cs544.team7.project.model.Role;
+import cs544.team7.project.model.Session;
 import cs544.team7.project.repository.AppointmentRepository;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -12,15 +14,20 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import javax.mail.MessagingException;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 import static cs544.team7.project.model.AppointmentStatus.*;
 import static cs544.team7.project.model.RoleType.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class AppointmentServiceTest {

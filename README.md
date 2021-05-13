@@ -3,7 +3,7 @@
 
 # cs544_project
 
-Web application that will automate the process of making TM checking appointments online. 
+Rest API that will automate the process of making TM checking appointments online. 
 
 ### Requirements
 
@@ -39,17 +39,26 @@ appointment is created or modified.
 ### Technologies
 
 This section should list any major frameworks used to built the project.
-* [Spring](https://spring.io/)
-* [Hibernate](https://hibernate.org/)
-* [ActiveMQ](https://activemq.apache.org/)
+* Spring boot
+* JPA & Hibernate
+* Spring Security
+* Spring Validation
+* MySql/Postgresql
+* lombok
+* JMS & ActiveMQ
+* Test: Mockito, assertj
+* Restful API
+* Deployment(heroku)
+* Actuator
+
 
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/creator789/cs544_project.svg?style=for-the-badge
-[contributors-url]: https://github.com/creator789/cs544_project/graphs/contributors
-[issues-shield]: https://img.shields.io/github/issues/creator789/cs544_project.svg?style=for-the-badge
-[issues-url]: https://github.com/creator789/cs544_project/issues
+[contributors-shield]: https://img.shields.io/github/contributors/johnsales/cs544_project.svg?style=for-the-badge
+[contributors-url]: https://github.com/johnsales/cs544_project/graphs/contributors
+[issues-shield]: https://img.shields.io/github/issues/johnsales/cs544_project.svg?style=for-the-badge
+[issues-url]: https://github.com/johnsales/cs544_project/issues
 
 ### Publication
 https://cs544-project.herokuapp.com/

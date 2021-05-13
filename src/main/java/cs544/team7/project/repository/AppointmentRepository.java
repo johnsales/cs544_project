@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import cs544.team7.project.model.Appointment;
 
 @Repository
-@Transactional
+@Transactional//Required by default (reuse or create new if not find)
 public interface AppointmentRepository extends JpaRepository<Appointment, Integer> {
 	
 }

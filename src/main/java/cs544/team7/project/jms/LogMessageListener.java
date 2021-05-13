@@ -67,7 +67,7 @@ public class LogMessageListener implements MessageListener {
         msg.setFrom(new InternetAddress(to, false));
 
         msg.setRecipients(javax.mail.Message.RecipientType.TO, InternetAddress.parse(to));
-        msg.setSubject("testando final");
+        msg.setSubject("CSS544 Subject");
         //msg.setContent(email.getBody(), "text/html"); other way to set the content without multipart
         msg.setSentDate(new Date());
 
