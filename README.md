@@ -33,7 +33,7 @@ appointment is created or modified.
 
 ### Class Diagram
 <p>
-    <img src="images/class-diagram.png" alt="Logo" width="300" height="300">
+    <img src="images/class-diagram.png" alt="Logo" width="500" height="400">
 </p>
 
 ### Technologies
