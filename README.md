@@ -33,7 +33,7 @@ appointment is created or modified.
 
 ### Class Diagram
 <p>
-    <img src="images/class-diagram.png" alt="Logo" width="80" height="80">
+    <img src="images/class-diagram.png" alt="Logo" width="300" height="300">
 </p>
 
 ### Technologies
@@ -50,3 +50,6 @@ This section should list any major frameworks used to built the project.
 [contributors-url]: https://github.com/creator789/cs544_project/graphs/contributors
 [issues-shield]: https://img.shields.io/github/issues/creator789/cs544_project.svg?style=for-the-badge
 [issues-url]: https://github.com/creator789/cs544_project/issues
+
+### Publication
+https://cs544-project.herokuapp.com/
